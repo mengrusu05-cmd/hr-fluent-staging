@@ -1,0 +1,5 @@
+{
+  "version": "17.10",
+  "build": "hr-fluent-v17-10-qa7",
+  "notes": "QA7: 修复同版本不同构建无法检测更新的问题；待HTTPS真机验证"
+}

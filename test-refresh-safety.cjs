@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const source=fs.readFileSync(__dirname+'/update-v17-10.js','utf8').replace(/\}\)\(\);\s*$/, 'window.__qaRefresh=refresh;})();');
+function run(saveOk){let navigations=[],messages=[],storage=new Map();let context={URL,Date,console,autosaveProgress:()=>saveOk,toast:x=>messages.push(x),state:{tab:'home'},location:{protocol:'https:',hostname:'example.com',href:'https://example.com/hr/index.html',hash:'',replace:x=>navigations.push(x)},navigator:{onLine:true},sessionStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},document:{hidden:false,activeElement:null,getElementById:()=>null,addEventListener:()=>{}},window:{addEventListener:()=>{}},setInterval:()=>{},setTimeout:()=>{},fetch:()=>{throw Error('unexpected fetch')}};context.window.window=context.window;vm.createContext(context);vm.runInContext(source,context);context.window.__qaRefresh(true,'17.10');return {navigations,messages};}
+let failed=run(false);assert.equal(failed.navigations.length,0);assert(failed.messages.some(x=>x.includes('保存失败')));
+let passed=run(true);assert.equal(passed.navigations.length,1);assert(passed.navigations[0].includes('hr_refresh='));
+console.log('PASS save failure blocks navigation; PASS save success permits navigation');
