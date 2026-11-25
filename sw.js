@@ -1,4 +1,4 @@
-const CACHE='hr-fluent-v17-10-qa7-20261126';
+const CACHE='hr-fluent-v17-10-closeout-r3-20261126';
 const ROOT=new URL('./',self.location.href);
 const HOME=new URL('index.html',ROOT).href;
 const CORE=['index.html','app-v17-10.js','update-v17-10.js','manifest.webmanifest'].map(x=>new URL(x,ROOT).href);
@@ -6,7 +6,9 @@ self.addEventListener('install',e=>e.waitUntil((async()=>{
  const c=await caches.open(CACHE);
  await c.addAll(CORE.map(u=>new Request(u,{cache:'reload'})));
  const h=await c.match(HOME);
- if(!h||(await h.text()).indexOf('name="hr-fluent-build" content="17.10"')<0)throw Error('deployment incomplete');
+ if(!h)throw Error('deployment incomplete');
+ const html=await h.text();
+ if(!html.includes('name="hr-fluent-build" content="17.10"')||!html.includes('name="hr-fluent-build-id" content="hr-fluent-v17-10-closeout-r3"'))throw Error('deployment incomplete or build mismatch');
  await self.skipWaiting();
 })()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{

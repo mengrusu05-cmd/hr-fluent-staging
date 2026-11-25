@@ -3,7 +3,7 @@
    Important: never delete localStorage, IndexedDB, or user progress. */
 (function(){
  'use strict';
- const CURRENT='17.10', BUILD='hr-fluent-v17-10-qa7';
+ const CURRENT='17.10', BUILD='hr-fluent-v17-10-closeout-r3';
  const SECURE=location.protocol==='https:'||location.hostname==='localhost';
  const MARKER='hr-fluent-build';
  const LAST_ATTEMPT='hr-fluent-v17-10-last-update-attempt';
@@ -62,7 +62,6 @@
     if(compare(htmlVer.version,remote.version)<0 || (remote.build && htmlVer.build!==remote.build)){info('检测到 V'+remote.version+'，但主页仍在发布中；请稍后检查');return}
     info('发现 V'+remote.version+'，更新可用');
     pending={version:remote.version,build:remote.build||remote.version};
-    await refreshWorker();
     if(eligible())refresh(false,remote.version);else promptUpdate(pending);
     return;
    }
@@ -78,9 +77,10 @@
   if(refreshing)return;
   if(!force&&!eligible()){promptUpdate({version:v});return}
   let attempt=null;try{attempt=JSON.parse(sessionStorage.getItem(LAST_ATTEMPT)||'null')}catch(e){}
-  if(!force&&attempt&&attempt.version===v&&Date.now()-attempt.at<120000){promptUpdate({version:v});return}
-  if(!flush()){info('学习记录保存失败，已取消刷新');tip('保存失败：请先导出学习记录备份，确认保存正常后再更新');return}
-  try{sessionStorage.setItem(LAST_ATTEMPT,JSON.stringify({version:v,at:Date.now()}))}catch(e){}
+  if(!force&&attempt&&attempt.version===v&&attempt.build===(pending?.build||v)&&Date.now()-attempt.at<120000){promptUpdate({version:v});return}
+  let saved=false;try{saved=flush()===true}catch(e){saved=false}
+  if(!saved){info('学习记录保存失败，已取消刷新');tip('保存失败：请先导出学习记录备份，确认保存正常后再更新');return}
+  try{sessionStorage.setItem(LAST_ATTEMPT,JSON.stringify({version:v,build:pending?.build||v,at:Date.now()}))}catch(e){}
   refreshing=true;
   // Same origin and path: preserves localStorage. Query busts the older PWA's navigation cache.
   const next=new URL('./index.html',location.href);
@@ -94,7 +94,6 @@
   const editing=document.activeElement?.matches?.('textarea,input,[contenteditable="true"]');
   if(editing&&!confirm('未提交的输入可能丢失。保存本机进度并刷新最新版本吗？'))return;
   info('正在从网站重新获取最新内容…');
-  if(!flush()){info('学习记录保存失败，已取消刷新');tip('保存失败：请先备份学习记录，暂不刷新');return}
   try{
    const published=await peekLiveBuild();
    if(compare(published.version,CURRENT)<0){info('线上仍为 V'+published.version+'，请检查 GitHub Pages 部署是否完成');tip('服务器版本低于本机版本，未触发刷新');return}
