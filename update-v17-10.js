@@ -1,12 +1,12 @@
 
-/* HR Fluent V17.10: network preflight + cache-safe installed app update flow.
+/* HR Fluent V18.0: network preflight + cache-safe installed app update flow.
    Important: never delete localStorage, IndexedDB, or user progress. */
 (function(){
  'use strict';
- const CURRENT='17.10', BUILD='hr-fluent-v17-10-closeout-r3';
+ const CURRENT='18.0', BUILD='hr-fluent-v18-0-final-rc-gated-20261126';
  const SECURE=location.protocol==='https:'||location.hostname==='localhost';
  const MARKER='hr-fluent-build';
- const LAST_ATTEMPT='hr-fluent-v17-10-last-update-attempt';
+ const LAST_ATTEMPT='hr-fluent-last-update-attempt:'+new URL('./',location.href).pathname;
  let registration=null,checking=false,checkAt=0,pending=null,refreshing=false,hiddenMsg='';
  const compare=(a,b)=>{const aa=String(a||'').split('.'),bb=String(b||'').split('.');for(let i=0;i<3;i++){const n=(Number(aa[i])||0)-(Number(bb[i])||0);if(n)return n}return 0};
  function flush(){return typeof autosaveProgress==='function' ? autosaveProgress() : false}
@@ -98,7 +98,7 @@
    const published=await peekLiveBuild();
    if(compare(published.version,CURRENT)<0){info('线上仍为 V'+published.version+'，请检查 GitHub Pages 部署是否完成');tip('服务器版本低于本机版本，未触发刷新');return}
    // Remove stale application caches but retain the current offline cache and ALL learning records.
-   if('caches' in window){const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('hr-fluent-')&&!k.startsWith('hr-fluent-v17-10-')).map(k=>caches.delete(k)))}
+   // Cache cleanup is handled by the scoped service worker on activation.
    await refreshWorker();
    info('网页已发布 V'+published.version+'，正在重新载入…');
    refresh(true,published.version);

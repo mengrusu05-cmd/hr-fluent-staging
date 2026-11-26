@@ -1,5 +1,5 @@
 {
-  "version": "17.10",
-  "build": "hr-fluent-v17-10-closeout-r3",
-  "notes": "Closeout R3: 更新防循环按构建标识判定；保存异常阻止刷新；待真实HTTPS及语音验收"
+  "version": "18.0",
+  "build": "hr-fluent-v18-0-final-rc-gated-20261126",
+  "notes": "Final RC preparation; staging/dev only; language and device gates open"
 }

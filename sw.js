@@ -1,19 +1,21 @@
-const CACHE='hr-fluent-v17-10-closeout-r3-20261126';
 const ROOT=new URL('./',self.location.href);
+if (!['/hr-fluent-staging/','/hr-fluent-dev/'].includes(ROOT.pathname)) throw Error('RC testing paths only; production release gated');
+const PREFIX='hrf-scope:'+encodeURIComponent(ROOT.pathname)+':';
+const CACHE=PREFIX+'hr-fluent-v18-0-final-rc-gated-20261126';
 const HOME=new URL('index.html',ROOT).href;
-const CORE=['index.html','app-v17-10.js','update-v17-10.js','manifest.webmanifest'].map(x=>new URL(x,ROOT).href);
+const CORE=['index.html','app-v17-10.js','update-v17-10.js','manifest.webmanifest','apple-touch-icon.png','hr-fluent-icon.svg','icon-192.png','icon-512.png'].map(x=>new URL(x,ROOT).href);
 self.addEventListener('install',e=>e.waitUntil((async()=>{
  const c=await caches.open(CACHE);
  await c.addAll(CORE.map(u=>new Request(u,{cache:'reload'})));
  const h=await c.match(HOME);
  if(!h)throw Error('deployment incomplete');
  const html=await h.text();
- if(!html.includes('name="hr-fluent-build" content="17.10"')||!html.includes('name="hr-fluent-build-id" content="hr-fluent-v17-10-closeout-r3"'))throw Error('deployment incomplete or build mismatch');
+ if(!html.includes('name="hr-fluent-build" content="18.0"')||!html.includes('name="hr-fluent-build-id" content="hr-fluent-v18-0-final-rc-gated-20261126"'))throw Error('deployment incomplete or build mismatch');
  await self.skipWaiting();
 })()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{
  const keys=await caches.keys();
- await Promise.all(keys.filter(k=>k.startsWith('hr-fluent-')&&k!==CACHE).map(k=>caches.delete(k)));
+ await Promise.all(keys.filter(k=>k.startsWith(PREFIX)&&k!==CACHE).map(k=>caches.delete(k)));
  await self.clients.claim();
 })()));
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting()});
